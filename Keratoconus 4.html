@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keratoconus Simulator V4</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* Align top */
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 30px 20px; /* Add some top/bottom padding */
+            box-sizing: border-box;
+        }
+
+        .simulator-container {
+            background-color: #ffffff;
+            padding: 60px; /* Increased padding */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 900px; /* Increased max-width */
+            margin-top: 20px; /* Space from top */
+        }
+
+        .text-display {
+            position: relative;
+            margin-bottom: 80px;
+            min-height: 120px; /* Adjusted min-height slightly */
+            display: inline-block;
+            /* Ensure container doesn't collapse */
+            vertical-align: top; /* Align properly if needed */
+        }
+
+        .main-text {
+            position: relative;
+            z-index: 1;
+            /* font-size set by JS, default target 5rem */
+            font-weight: bold;
+            margin: 0;
+            /* color set by JS, default black */
+            transition: font-size 0.1s ease-out;
+            white-space: nowrap; /* Keep text on one line */
+        }
+
+        .ghost-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%; /* Ensure it covers the same area */
+            /* font-size set by JS */
+            font-weight: bold;
+            margin: 0;
+            /* color set by JS */
+            /* opacity set by JS */
+            pointer-events: none;
+            /* transform set by JS */
+            white-space: nowrap; /* Keep text on one line */
+            transition: font-size 0.1s ease-out, transform 0.05s linear, opacity 0.05s linear;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            width: 100%;
+        }
+
+        .control-group label {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+         .control-group input[type="range"],
+         .control-group select {
+            width: 100%;
+            padding: 5px;
+            box-sizing: border-box;
+         }
+
+        .value-display {
+            font-weight: bold;
+            color: #007bff;
+            min-width: 40px;
+            text-align: right;
+            margin-left: 10px;
+        }
+
+        .label-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            align-items: center;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="simulator-container">
+        <div class="text-display" id="text-display"> <!-- Removed bad comment -->
+            <h1 class="main-text" id="main-text">Keratoconus</h1>
+            <h1 class="ghost-text" id="ghost-text">Keratoconus</h1>
+        </div>
+
+        <div class="controls">
+            <!-- Font Size Slider -->
+            <div class="control-group">
+                 <div class="label-container">
+                    <label for="font-size-slider">Font Size:</label>
+                    <span class="value-display" id="font-size-value">5rem</span> <!-- Default display updated -->
+                 </div>
+                <input type="range" id="font-size-slider" name="fontsize" min="0" max="8" value="4" step="1">
+                <!-- Min=0 (1rem), Max=8 (9rem), Default=4 (5rem) -->
+            </div>
+
+            <!-- Offset Slider -->
+            <div class="control-group">
+                 <div class="label-container">
+                    <label for="offset-slider">Offset Distance (px):</label>
+                    <span class="value-display" id="offset-value">5</span>
+                 </div>
+                <input type="range" id="offset-slider" name="offset" min="0" max="20" value="5" step="1"> <!-- max changed to 20 -->
+            </div>
+
+            <!-- Angle Slider -->
+            <div class="control-group">
+                <div class="label-container">
+                    <label for="angle-slider">Direction (degrees):</label>
+                    <span class="value-display" id="angle-value">220</span>
+                </div>
+                <input type="range" id="angle-slider" name="angle" min="0" max="360" value="220" step="1">
+            </div>
+
+            <!-- Opacity Slider -->
+            <div class="control-group">
+                <div class="label-container">
+                    <label for="opacity-slider">Ghost Opacity:</label>
+                    <span class="value-display" id="opacity-value">0.20</span>
+                 </div>
+                <input type="range" id="opacity-slider" name="opacity" min="0" max="1" value="0.2" step="0.01">
+            </div>
+
+            <!-- Color Selector -->
+            <div class="control-group">
+                 <div class="label-container">
+                     <label for="color-selector">Text Color:</label>
+                 </div>
+                 <select id="color-selector" name="color">
+                    <option value="#000000" selected>Black</option>
+                    <option value="#FF0000">Red</option>
+                    <option value="#0000FF">Blue</option>
+                    <option value="#008000">Green</option>
+                    <option value="#800080">Purple</option>
+                    <option value="#FFA500">Orange</option>
+                    <option value="#808080">Gray</option>
+                    <option value="#A52A2A">Brown</option>
+                 </select>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- Get DOM Elements ---
+        const mainText = document.getElementById('main-text');
+        const ghostText = document.getElementById('ghost-text');
+        const textDisplay = document.getElementById('text-display');
+        const fontSizeSlider = document.getElementById('font-size-slider');
+        const offsetSlider = document.getElementById('offset-slider');
+        const angleSlider = document.getElementById('angle-slider');
+        const opacitySlider = document.getElementById('opacity-slider');
+        const colorSelector = document.getElementById('color-selector');
+        const fontSizeValueDisplay = document.getElementById('font-size-value');
+        const offsetValueDisplay = document.getElementById('offset-value');
+        const angleValueDisplay = document.getElementById('angle-value');
+        const opacityValueDisplay = document.getElementById('opacity-value');
+
+        // --- Combined Update Function ---
+        function updateVisuals() {
+            // Read values from controls
+            const fontSizeSliderValue = parseInt(fontSizeSlider.value); // Value from 0 to 8
+            const offset = parseFloat(offsetSlider.value);
+            const angleDegrees = parseFloat(angleSlider.value);
+            const opacity = parseFloat(opacitySlider.value);
+            const selectedColor = colorSelector.value;
+
+            // --- Calculate Actual Font Size ---
+            // Map slider 0-8 to 1rem-9rem. Default slider value 4 maps to 5rem.
+            const actualFontSizeRem = fontSizeSliderValue + 1; // *** FONT SIZE MAPPING CHANGED ***
+
+            // Update display values
+            fontSizeValueDisplay.textContent = actualFontSizeRem + 'rem';
+            offsetValueDisplay.textContent = offset;
+            angleValueDisplay.textContent = angleDegrees;
+            opacityValueDisplay.textContent = opacity.toFixed(2);
+
+            // --- Update Font Size ---
+            mainText.style.fontSize = actualFontSizeRem + 'rem';
+            ghostText.style.fontSize = actualFontSizeRem + 'rem';
+            // Adjust min-height slightly based on font size for better container stability
+            textDisplay.style.minHeight = (actualFontSizeRem * 1.8) + 'rem'; // Heuristic adjustment factor
+
+
+            // --- Update Ghost Position (Calculation is unchanged, verified correct) ---
+            const angleRadians = angleDegrees * (Math.PI / 180);
+            const dx = offset * Math.cos(angleRadians);
+            const dy = offset * Math.sin(angleRadians);
+            ghostText.style.transform = `translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px)`;
+
+            // --- Update Ghost Opacity ---
+            ghostText.style.opacity = opacity;
+
+            // --- Update Colors ---
+            mainText.style.color = selectedColor;
+            ghostText.style.color = selectedColor;
+        }
+
+        // --- Initial Setup ---
+        // Add event listeners to all controls
+        fontSizeSlider.addEventListener('input', updateVisuals);
+        offsetSlider.addEventListener('input', updateVisuals);
+        angleSlider.addEventListener('input', updateVisuals);
+        opacitySlider.addEventListener('input', updateVisuals);
+        colorSelector.addEventListener('change', updateVisuals);
+
+        // Call the update function once on page load to set the initial state based on HTML defaults
+        updateVisuals();
+
+    </script>
+
+</body>
+</html>
