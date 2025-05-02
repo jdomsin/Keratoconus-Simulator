@@ -3,67 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keratoconus Simulator V4</title>
+    <title>Responsive Keratoconus Simulator V9</title>
     <style>
+        /* Base styles */
+        html {
+            font-size: 16px;
+        }
+
         body {
             font-family: sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start; /* Align top */
+            justify-content: flex-start;
             min-height: 100vh;
             background-color: #f0f0f0;
             margin: 0;
-            padding: 30px 20px; /* Add some top/bottom padding */
+            padding: 20px;
             box-sizing: border-box;
+            line-height: 1.5;
         }
 
         .simulator-container {
             background-color: #ffffff;
-            padding: 60px; /* Increased padding */
+            padding: 50px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            text-align: center;
             width: 90%;
-            max-width: 900px; /* Increased max-width */
-            margin-top: 20px; /* Space from top */
+            max-width: 900px;
+            margin-top: 20px;
+            box-sizing: border-box;
+            overflow: hidden; /* Keep this */
+
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center flex items */
         }
 
         .text-display {
             position: relative;
-            margin-bottom: 80px;
-            min-height: 120px; /* Adjusted min-height slightly */
-            display: inline-block;
-            /* Ensure container doesn't collapse */
-            vertical-align: top; /* Align properly if needed */
+            margin-bottom: 70px; /* Base margin */
+            /* min-height set by JS */
+            display: block;
+            width: 100%; /* Use full available width */
+            box-sizing: border-box;
+            transition: transform 0.2s ease-out, margin-left 0.2s ease-out; /* Add margin transition */
+            transform-origin: center center;
+            transform: scale(1.0); /* Base Scale */
+            margin-left: 0; /* Base margin */
         }
 
-        .main-text {
+        .main-text, .ghost-text {
             position: relative;
             z-index: 1;
-            /* font-size set by JS, default target 5rem */
             font-weight: bold;
             margin: 0;
-            /* color set by JS, default black */
-            transition: font-size 0.1s ease-out;
-            white-space: nowrap; /* Keep text on one line */
+            white-space: nowrap;
+            transition: font-size 0.1s ease-out, transform 0.05s linear, opacity 0.05s linear, color 0.1s linear;
+            display: block;
+            box-sizing: border-box;
+            text-align: center; /* Keep text centered in its block */
         }
 
         .ghost-text {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%; /* Ensure it covers the same area */
-            /* font-size set by JS */
-            font-weight: bold;
-            margin: 0;
-            /* color set by JS */
-            /* opacity set by JS */
+            z-index: 0;
+            width: 100%;
             pointer-events: none;
-            /* transform set by JS */
-            white-space: nowrap; /* Keep text on one line */
-            transition: font-size 0.1s ease-out, transform 0.05s linear, opacity 0.05s linear;
         }
+
 
         .controls {
             display: flex;
@@ -72,63 +82,89 @@
             gap: 20px;
             width: 100%;
             max-width: 400px;
-            margin: 0 auto;
-        }
-
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            width: 100%;
-        }
-
-        .control-group label {
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-            color: #555;
-        }
-
-         .control-group input[type="range"],
-         .control-group select {
-            width: 100%;
-            padding: 5px;
             box-sizing: border-box;
+        }
+
+        /* Control Group & Label styles remain the same */
+        .control-group { display: flex; flex-direction: column; align-items: stretch; width: 100%; box-sizing: border-box; }
+        .control-group label { margin-bottom: 5px; font-size: 0.9rem; color: #555; }
+        .control-group input[type="range"], .control-group select { width: 100%; padding: 8px 5px; box-sizing: border-box; }
+        .value-display { font-weight: bold; color: #007bff; min-width: 40px; text-align: right; margin-left: 10px; font-size: 0.9rem; }
+        .label-container { display: flex; justify-content: space-between; width: 100%; align-items: center; }
+
+        /* --- Responsive Adjustments --- */
+
+        @media (max-width: 992px) {
+            html { font-size: 15px; }
+            .simulator-container { padding: 40px; max-width: 800px; }
+            .text-display { margin-bottom: 60px; }
+        }
+
+         @media (max-width: 768px) {
+             html { font-size: 14px; }
+             .simulator-container { padding: 30px 20px; }
          }
 
-        .value-display {
-            font-weight: bold;
-            color: #007bff;
-            min-width: 40px;
-            text-align: right;
-            margin-left: 10px;
+
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .simulator-container {
+                width: 95%;
+                padding: 25px 10px;
+                margin-top: 10px;
+            }
+            .text-display {
+                margin-bottom: 50px;
+                transform: scale(0.8);
+                /* Negative margin to pull left: (1 - 0.8) / 2 = 0.1 -> 10% of parent */
+                /* Try percentage based on element width reduction */
+                /* margin-left: -10%; */ /* Adjust if needed */
+            }
+            .controls { max-width: 100%; gap: 15px; }
+            .control-group label, .value-display { font-size: 0.85rem; }
         }
 
-        .label-container {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            align-items: center;
+        @media (max-width: 480px) {
+             html { font-size: 13px; }
+             .simulator-container { padding: 20px 10px; }
+             .text-display {
+                 margin-bottom: 45px;
+                 transform: scale(0.6);
+                 /* Negative margin: (1 - 0.6) / 2 = 0.2 -> 20% */
+                 margin-left: -20%; /* ** ADDED NEGATIVE MARGIN ** */
+             }
         }
+
+         @media (max-width: 380px) {
+             html { font-size: 12px; }
+             .simulator-container { padding: 20px 5px; }
+              .text-display {
+                 transform: scale(0.5);
+                 margin-bottom: 40px;
+                  /* Negative margin: (1 - 0.5) / 2 = 0.25 -> 25% */
+                 margin-left: -25%; /* ** ADDED NEGATIVE MARGIN ** */
+             }
+         }
 
     </style>
 </head>
 <body>
 
+    <!-- Container and Controls HTML remain the same as V8 -->
     <div class="simulator-container">
-        <div class="text-display" id="text-display"> <!-- Removed bad comment -->
+        <div class="text-display" id="text-display">
             <h1 class="main-text" id="main-text">Keratoconus</h1>
             <h1 class="ghost-text" id="ghost-text">Keratoconus</h1>
         </div>
 
         <div class="controls">
-            <!-- Font Size Slider -->
+             <!-- Font Size Slider -->
             <div class="control-group">
                  <div class="label-container">
                     <label for="font-size-slider">Font Size:</label>
-                    <span class="value-display" id="font-size-value">5rem</span> <!-- Default display updated -->
+                    <span class="value-display" id="font-size-value">5rem</span>
                  </div>
                 <input type="range" id="font-size-slider" name="fontsize" min="0" max="8" value="4" step="1">
-                <!-- Min=0 (1rem), Max=8 (9rem), Default=4 (5rem) -->
             </div>
 
             <!-- Offset Slider -->
@@ -137,7 +173,7 @@
                     <label for="offset-slider">Offset Distance (px):</label>
                     <span class="value-display" id="offset-value">5</span>
                  </div>
-                <input type="range" id="offset-slider" name="offset" min="0" max="20" value="5" step="1"> <!-- max changed to 20 -->
+                <input type="range" id="offset-slider" name="offset" min="0" max="20" value="5" step="1">
             </div>
 
             <!-- Angle Slider -->
@@ -174,11 +210,11 @@
                     <option value="#A52A2A">Brown</option>
                  </select>
             </div>
-
         </div>
     </div>
 
-    <script>
+    <!-- JavaScript remains the same as V8 -->
+     <script>
         // --- Get DOM Elements ---
         const mainText = document.getElementById('main-text');
         const ghostText = document.getElementById('ghost-text');
@@ -203,8 +239,7 @@
             const selectedColor = colorSelector.value;
 
             // --- Calculate Actual Font Size ---
-            // Map slider 0-8 to 1rem-9rem. Default slider value 4 maps to 5rem.
-            const actualFontSizeRem = fontSizeSliderValue + 1; // *** FONT SIZE MAPPING CHANGED ***
+            const actualFontSizeRem = fontSizeSliderValue + 1; // Map slider 0-8 to 1rem-9rem
 
             // Update display values
             fontSizeValueDisplay.textContent = actualFontSizeRem + 'rem';
@@ -215,11 +250,19 @@
             // --- Update Font Size ---
             mainText.style.fontSize = actualFontSizeRem + 'rem';
             ghostText.style.fontSize = actualFontSizeRem + 'rem';
-            // Adjust min-height slightly based on font size for better container stability
-            textDisplay.style.minHeight = (actualFontSizeRem * 1.8) + 'rem'; // Heuristic adjustment factor
 
+            // --- Dynamic Min Height Adjustment ---
+             if (textDisplay.minHeightTimeout) {
+                 clearTimeout(textDisplay.minHeightTimeout);
+             }
+            textDisplay.minHeightTimeout = setTimeout(() => {
+                 const computedStyle = getComputedStyle(mainText);
+                 const currentFontSizePx = parseFloat(computedStyle.fontSize);
+                 const currentLineHeight = parseFloat(computedStyle.lineHeight) || (currentFontSizePx * 1.2);
+                 textDisplay.style.minHeight = (currentLineHeight * 1.2) + 'px';
+            }, 0);
 
-            // --- Update Ghost Position (Calculation is unchanged, verified correct) ---
+            // --- Update Ghost Position ---
             const angleRadians = angleDegrees * (Math.PI / 180);
             const dx = offset * Math.cos(angleRadians);
             const dy = offset * Math.sin(angleRadians);
@@ -234,15 +277,13 @@
         }
 
         // --- Initial Setup ---
-        // Add event listeners to all controls
         fontSizeSlider.addEventListener('input', updateVisuals);
         offsetSlider.addEventListener('input', updateVisuals);
         angleSlider.addEventListener('input', updateVisuals);
         opacitySlider.addEventListener('input', updateVisuals);
         colorSelector.addEventListener('change', updateVisuals);
 
-        // Call the update function once on page load to set the initial state based on HTML defaults
-        updateVisuals();
+        setTimeout(updateVisuals, 0);
 
     </script>
 
