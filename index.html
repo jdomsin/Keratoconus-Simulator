@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsive Keratoconus Simulator V9</title>
+    <title>Responsive Keratoconus Simulator V12 - Global Blur</title>
     <style>
         /* Base styles */
         html {
@@ -53,18 +53,23 @@
             margin-left: 0; /* Base margin */
         }
 
+        /* Styles for ALL text elements */
         .main-text, .ghost-text {
             position: relative;
             z-index: 1;
             font-weight: bold;
             margin: 0;
             white-space: nowrap;
-            transition: font-size 0.1s ease-out, transform 0.05s linear, opacity 0.05s linear, color 0.1s linear;
+            /* ADDED filter to transition */
+            transition: font-size 0.1s ease-out, transform 0.05s linear, opacity 0.05s linear, color 0.1s linear, filter 0.1s linear;
             display: block;
             box-sizing: border-box;
-            text-align: center; /* Keep text centered in its block */
+            text-align: center;
+            filter: blur(0px); /* Default no blur */
+             /* Font size, color set by JS */
         }
 
+        /* Specific styles for GHOST text elements */
         .ghost-text {
             position: absolute;
             top: 0;
@@ -72,6 +77,7 @@
             z-index: 0;
             width: 100%;
             pointer-events: none;
+             /* Opacity, transform set by JS individually */
         }
 
 
@@ -79,177 +85,277 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
+            gap: 25px;
             width: 100%;
-            max-width: 400px;
+            max-width: 700px;
             box-sizing: border-box;
         }
 
+         .control-section {
+             width: 100%;
+             padding: 15px;
+             border: 1px solid #e0e0e0;
+             border-radius: 5px;
+             background-color: #f9f9f9;
+             box-sizing: border-box;
+         }
+         .control-section h3 {
+             margin-top: 0;
+             margin-bottom: 15px;
+             text-align: center;
+             color: #333;
+             font-size: 1.1rem;
+         }
+
+        .eye-controls-wrapper {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .eye-controls-wrapper > .control-section {
+            flex: 1;
+            min-width: 200px;
+        }
+
+
         /* Control Group & Label styles remain the same */
-        .control-group { display: flex; flex-direction: column; align-items: stretch; width: 100%; box-sizing: border-box; }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+         }
+        .control-group:last-child { margin-bottom: 0; }
+
         .control-group label { margin-bottom: 5px; font-size: 0.9rem; color: #555; }
         .control-group input[type="range"], .control-group select { width: 100%; padding: 8px 5px; box-sizing: border-box; }
         .value-display { font-weight: bold; color: #007bff; min-width: 40px; text-align: right; margin-left: 10px; font-size: 0.9rem; }
         .label-container { display: flex; justify-content: space-between; width: 100%; align-items: center; }
 
-        /* --- Responsive Adjustments --- */
-
-        @media (max-width: 992px) {
-            html { font-size: 15px; }
-            .simulator-container { padding: 40px; max-width: 800px; }
-            .text-display { margin-bottom: 60px; }
-        }
-
-         @media (max-width: 768px) {
-             html { font-size: 14px; }
-             .simulator-container { padding: 30px 20px; }
-         }
-
+        /* --- Responsive Adjustments (Keep previous ones) --- */
+        @media (max-width: 992px) { html { font-size: 15px; } .simulator-container { padding: 40px; max-width: 800px; } .text-display { margin-bottom: 60px; } .controls { max-width: 600px; } }
+        @media (max-width: 768px) { html { font-size: 14px; } .simulator-container { padding: 30px 20px; } .controls { max-width: 500px; } }
 
         @media (max-width: 600px) {
             body { padding: 10px; }
-            .simulator-container {
-                width: 95%;
-                padding: 25px 10px;
-                margin-top: 10px;
-            }
-            .text-display {
-                margin-bottom: 50px;
-                transform: scale(0.8);
-                /* Negative margin to pull left: (1 - 0.8) / 2 = 0.1 -> 10% of parent */
-                /* Try percentage based on element width reduction */
-                /* margin-left: -10%; */ /* Adjust if needed */
-            }
-            .controls { max-width: 100%; gap: 15px; }
+            .simulator-container { width: 95%; padding: 25px 10px; margin-top: 10px; }
+            .text-display { margin-bottom: 50px; transform: scale(0.8); }
+            .controls { max-width: 100%; gap: 20px; }
             .control-group label, .value-display { font-size: 0.85rem; }
+            .control-section h3 { font-size: 1rem; }
+            .eye-controls-wrapper { gap: 15px; }
+            .eye-controls-wrapper > .control-section { min-width: 160px; }
         }
-
         @media (max-width: 480px) {
              html { font-size: 13px; }
              .simulator-container { padding: 20px 10px; }
-             .text-display {
-                 margin-bottom: 45px;
-                 transform: scale(0.6);
-                 /* Negative margin: (1 - 0.6) / 2 = 0.2 -> 20% */
-                 margin-left: -20%; /* ** ADDED NEGATIVE MARGIN ** */
-             }
-        }
+             .text-display { margin-bottom: 45px; transform: scale(0.6); margin-left: -20%; }
+             .eye-controls-wrapper { flex-direction: column; }
+             .eye-controls-wrapper > .control-section { min-width: 100%; }
 
-         @media (max-width: 380px) {
+        }
+        @media (max-width: 380px) {
              html { font-size: 12px; }
              .simulator-container { padding: 20px 5px; }
-              .text-display {
-                 transform: scale(0.5);
-                 margin-bottom: 40px;
-                  /* Negative margin: (1 - 0.5) / 2 = 0.25 -> 25% */
-                 margin-left: -25%; /* ** ADDED NEGATIVE MARGIN ** */
-             }
+             .text-display { margin-bottom: 40px; transform: scale(0.5); margin-left: -25%; }
          }
 
     </style>
 </head>
 <body>
 
-    <!-- Container and Controls HTML remain the same as V8 -->
     <div class="simulator-container">
         <div class="text-display" id="text-display">
             <h1 class="main-text" id="main-text">Keratoconus</h1>
-            <h1 class="ghost-text" id="ghost-text">Keratoconus</h1>
+            <h1 class="ghost-text" id="ghost-text-left">Keratoconus</h1>
+            <h1 class="ghost-text" id="ghost-text-right">Keratoconus</h1>
         </div>
 
         <div class="controls">
-             <!-- Font Size Slider -->
-            <div class="control-group">
-                 <div class="label-container">
-                    <label for="font-size-slider">Font Size:</label>
-                    <span class="value-display" id="font-size-value">5rem</span>
+
+             <!-- Global Controls Section -->
+             <div class="control-section">
+                 <h3>Global Settings</h3>
+                 <!-- Font Size Slider -->
+                 <div class="control-group">
+                     <div class="label-container">
+                        <label for="font-size-slider">Font Size:</label>
+                        <span class="value-display" id="font-size-value">5rem</span>
+                     </div>
+                    <input type="range" id="font-size-slider" name="fontsize" min="0" max="8" value="4" step="1">
                  </div>
-                <input type="range" id="font-size-slider" name="fontsize" min="0" max="8" value="4" step="1">
-            </div>
-
-            <!-- Offset Slider -->
-            <div class="control-group">
-                 <div class="label-container">
-                    <label for="offset-slider">Offset Distance (px):</label>
-                    <span class="value-display" id="offset-value">5</span>
+                 <!-- Color Selector -->
+                 <div class="control-group">
+                     <div class="label-container">
+                         <label for="color-selector">Text Color:</label>
+                     </div>
+                     <select id="color-selector" name="color">
+                        <option value="#000000" selected>Black</option>
+                        <option value="#FF0000">Red</option>
+                        <option value="#0000FF">Blue</option>
+                        <option value="#008000">Green</option>
+                        <option value="#800080">Purple</option>
+                        <option value="#FFA500">Orange</option>
+                        <option value="#808080">Gray</option>
+                        <option value="#A52A2A">Brown</option>
+                     </select>
                  </div>
-                <input type="range" id="offset-slider" name="offset" min="0" max="20" value="5" step="1">
-            </div>
-
-            <!-- Angle Slider -->
-            <div class="control-group">
-                <div class="label-container">
-                    <label for="angle-slider">Direction (degrees):</label>
-                    <span class="value-display" id="angle-value">220</span>
-                </div>
-                <input type="range" id="angle-slider" name="angle" min="0" max="360" value="220" step="1">
-            </div>
-
-            <!-- Opacity Slider -->
-            <div class="control-group">
-                <div class="label-container">
-                    <label for="opacity-slider">Ghost Opacity:</label>
-                    <span class="value-display" id="opacity-value">0.20</span>
+                 <!-- NEW Blur Slider -->
+                 <div class="control-group">
+                     <div class="label-container">
+                        <label for="blur-slider">Global Blur (px):</label>
+                        <span class="value-display" id="blur-value">0.0</span>
+                     </div>
+                    <input type="range" id="blur-slider" name="blur" min="0" max="10" value="0" step="0.1">
                  </div>
-                <input type="range" id="opacity-slider" name="opacity" min="0" max="1" value="0.2" step="0.01">
-            </div>
+             </div>
 
-            <!-- Color Selector -->
-            <div class="control-group">
-                 <div class="label-container">
-                     <label for="color-selector">Text Color:</label>
+             <!-- Eye Controls Wrapper -->
+             <div class="eye-controls-wrapper">
+                 <!-- Left Eye Controls Section -->
+                 <div class="control-section">
+                     <h3>Left Eye Offset</h3>
+                     <!-- Sliders remain the same -->
+                     <div class="control-group">
+                         <div class="label-container">
+                            <label for="offset-slider-left">Offset Distance (px):</label>
+                            <span class="value-display" id="offset-value-left">5</span>
+                         </div>
+                        <input type="range" id="offset-slider-left" name="offset-left" min="0" max="20" value="5" step="1">
+                     </div>
+                     <div class="control-group">
+                         <div class="label-container">
+                            <label for="angle-slider-left">Direction (degrees):</label>
+                            <span class="value-display" id="angle-value-left">220</span>
+                         </div>
+                        <input type="range" id="angle-slider-left" name="angle-left" min="0" max="360" value="220" step="1">
+                     </div>
+                     <div class="control-group">
+                         <div class="label-container">
+                            <label for="opacity-slider-left">Opacity:</label>
+                            <span class="value-display" id="opacity-value-left">0.20</span>
+                         </div>
+                        <input type="range" id="opacity-slider-left" name="opacity-left" min="0" max="1" value="0.2" step="0.01">
+                     </div>
                  </div>
-                 <select id="color-selector" name="color">
-                    <option value="#000000" selected>Black</option>
-                    <option value="#FF0000">Red</option>
-                    <option value="#0000FF">Blue</option>
-                    <option value="#008000">Green</option>
-                    <option value="#800080">Purple</option>
-                    <option value="#FFA500">Orange</option>
-                    <option value="#808080">Gray</option>
-                    <option value="#A52A2A">Brown</option>
-                 </select>
-            </div>
-        </div>
-    </div>
 
-    <!-- JavaScript remains the same as V8 -->
+                  <!-- Right Eye Controls Section -->
+                 <div class="control-section">
+                     <h3>Right Eye Offset</h3>
+                      <!-- Sliders remain the same -->
+                     <div class="control-group">
+                         <div class="label-container">
+                            <label for="offset-slider-right">Offset Distance (px):</label>
+                            <span class="value-display" id="offset-value-right">3</span>
+                         </div>
+                        <input type="range" id="offset-slider-right" name="offset-right" min="0" max="20" value="3" step="1">
+                     </div>
+                     <div class="control-group">
+                         <div class="label-container">
+                            <label for="angle-slider-right">Direction (degrees):</label>
+                            <span class="value-display" id="angle-value-right">150</span>
+                         </div>
+                        <input type="range" id="angle-slider-right" name="angle-right" min="0" max="360" value="150" step="1">
+                     </div>
+                     <div class="control-group">
+                         <div class="label-container">
+                            <label for="opacity-slider-right">Opacity:</label>
+                            <span class="value-display" id="opacity-value-right">0.15</span>
+                         </div>
+                        <input type="range" id="opacity-slider-right" name="opacity-right" min="0" max="1" value="0.15" step="0.01">
+                     </div>
+                 </div>
+
+             </div> <!-- End eye-controls-wrapper -->
+
+        </div> <!-- End controls -->
+    </div> <!-- End simulator-container -->
+
      <script>
         // --- Get DOM Elements ---
         const mainText = document.getElementById('main-text');
-        const ghostText = document.getElementById('ghost-text');
+        const ghostTextLeft = document.getElementById('ghost-text-left');
+        const ghostTextRight = document.getElementById('ghost-text-right');
         const textDisplay = document.getElementById('text-display');
+
+        // Global Controls
         const fontSizeSlider = document.getElementById('font-size-slider');
-        const offsetSlider = document.getElementById('offset-slider');
-        const angleSlider = document.getElementById('angle-slider');
-        const opacitySlider = document.getElementById('opacity-slider');
         const colorSelector = document.getElementById('color-selector');
+        const blurSlider = document.getElementById('blur-slider'); // New
         const fontSizeValueDisplay = document.getElementById('font-size-value');
-        const offsetValueDisplay = document.getElementById('offset-value');
-        const angleValueDisplay = document.getElementById('angle-value');
-        const opacityValueDisplay = document.getElementById('opacity-value');
+        const blurValueDisplay = document.getElementById('blur-value'); // New
+
+        // Left Eye Controls
+        const offsetSliderLeft = document.getElementById('offset-slider-left');
+        const angleSliderLeft = document.getElementById('angle-slider-left');
+        const opacitySliderLeft = document.getElementById('opacity-slider-left');
+        const offsetValueDisplayLeft = document.getElementById('offset-value-left');
+        const angleValueDisplayLeft = document.getElementById('angle-value-left');
+        const opacityValueDisplayLeft = document.getElementById('opacity-value-left');
+
+        // Right Eye Controls
+        const offsetSliderRight = document.getElementById('offset-slider-right');
+        const angleSliderRight = document.getElementById('angle-slider-right');
+        const opacitySliderRight = document.getElementById('opacity-slider-right');
+        const offsetValueDisplayRight = document.getElementById('offset-value-right');
+        const angleValueDisplayRight = document.getElementById('angle-value-right');
+        const opacityValueDisplayRight = document.getElementById('opacity-value-right');
+
+
+        // --- Helper Function ---
+        function calculateTransform(offset, angleDegrees) {
+            const angleRadians = angleDegrees * (Math.PI / 180);
+            const dx = offset * Math.cos(angleRadians);
+            const dy = offset * Math.sin(angleRadians);
+            return `translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px)`;
+        }
 
         // --- Combined Update Function ---
         function updateVisuals() {
-            // Read values from controls
-            const fontSizeSliderValue = parseInt(fontSizeSlider.value); // Value from 0 to 8
-            const offset = parseFloat(offsetSlider.value);
-            const angleDegrees = parseFloat(angleSlider.value);
-            const opacity = parseFloat(opacitySlider.value);
+            // Read Global values
+            const fontSizeSliderValue = parseInt(fontSizeSlider.value);
             const selectedColor = colorSelector.value;
+            const blurValue = parseFloat(blurSlider.value); // New
+            const actualFontSizeRem = fontSizeSliderValue + 1;
 
-            // --- Calculate Actual Font Size ---
-            const actualFontSizeRem = fontSizeSliderValue + 1; // Map slider 0-8 to 1rem-9rem
+            // Read Left Eye values
+            const offsetLeft = parseFloat(offsetSliderLeft.value);
+            const angleDegreesLeft = parseFloat(angleSliderLeft.value);
+            const opacityLeft = parseFloat(opacitySliderLeft.value);
+
+             // Read Right Eye values
+            const offsetRight = parseFloat(offsetSliderRight.value);
+            const angleDegreesRight = parseFloat(angleSliderRight.value);
+            const opacityRight = parseFloat(opacitySliderRight.value);
 
             // Update display values
             fontSizeValueDisplay.textContent = actualFontSizeRem + 'rem';
-            offsetValueDisplay.textContent = offset;
-            angleValueDisplay.textContent = angleDegrees;
-            opacityValueDisplay.textContent = opacity.toFixed(2);
+            blurValueDisplay.textContent = blurValue.toFixed(1); // New
+            offsetValueDisplayLeft.textContent = offsetLeft;
+            angleValueDisplayLeft.textContent = angleDegreesLeft;
+            opacityValueDisplayLeft.textContent = opacityLeft.toFixed(2);
+            offsetValueDisplayRight.textContent = offsetRight;
+            angleValueDisplayRight.textContent = angleDegreesRight;
+            opacityValueDisplayRight.textContent = opacityRight.toFixed(2);
 
-            // --- Update Font Size ---
+
+            // --- Apply Global Styles ---
+            const blurStyle = `blur(${blurValue.toFixed(1)}px)`; // New - construct blur style
             mainText.style.fontSize = actualFontSizeRem + 'rem';
-            ghostText.style.fontSize = actualFontSizeRem + 'rem';
+            ghostTextLeft.style.fontSize = actualFontSizeRem + 'rem';
+            ghostTextRight.style.fontSize = actualFontSizeRem + 'rem';
+            mainText.style.color = selectedColor;
+            ghostTextLeft.style.color = selectedColor;
+            ghostTextRight.style.color = selectedColor;
+            mainText.style.filter = blurStyle; // New - Apply blur
+            ghostTextLeft.style.filter = blurStyle; // New - Apply blur
+            ghostTextRight.style.filter = blurStyle; // New - Apply blur
+
 
             // --- Dynamic Min Height Adjustment ---
              if (textDisplay.minHeightTimeout) {
@@ -262,27 +368,32 @@
                  textDisplay.style.minHeight = (currentLineHeight * 1.2) + 'px';
             }, 0);
 
-            // --- Update Ghost Position ---
-            const angleRadians = angleDegrees * (Math.PI / 180);
-            const dx = offset * Math.cos(angleRadians);
-            const dy = offset * Math.sin(angleRadians);
-            ghostText.style.transform = `translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px)`;
+            // --- Apply Left Eye Specific Styles ---
+            ghostTextLeft.style.transform = calculateTransform(offsetLeft, angleDegreesLeft);
+            ghostTextLeft.style.opacity = opacityLeft;
 
-            // --- Update Ghost Opacity ---
-            ghostText.style.opacity = opacity;
-
-            // --- Update Colors ---
-            mainText.style.color = selectedColor;
-            ghostText.style.color = selectedColor;
+            // --- Apply Right Eye Specific Styles ---
+            ghostTextRight.style.transform = calculateTransform(offsetRight, angleDegreesRight);
+            ghostTextRight.style.opacity = opacityRight;
         }
 
         // --- Initial Setup ---
+        // Global listeners
         fontSizeSlider.addEventListener('input', updateVisuals);
-        offsetSlider.addEventListener('input', updateVisuals);
-        angleSlider.addEventListener('input', updateVisuals);
-        opacitySlider.addEventListener('input', updateVisuals);
         colorSelector.addEventListener('change', updateVisuals);
+        blurSlider.addEventListener('input', updateVisuals); // New listener
 
+        // Left Eye listeners
+        offsetSliderLeft.addEventListener('input', updateVisuals);
+        angleSliderLeft.addEventListener('input', updateVisuals);
+        opacitySliderLeft.addEventListener('input', updateVisuals);
+
+        // Right Eye listeners
+        offsetSliderRight.addEventListener('input', updateVisuals);
+        angleSliderRight.addEventListener('input', updateVisuals);
+        opacitySliderRight.addEventListener('input', updateVisuals);
+
+        // Initial call
         setTimeout(updateVisuals, 0);
 
     </script>
